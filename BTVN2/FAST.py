@@ -27,6 +27,19 @@ def get_fast_16_pixels(p):
     """
     return np.array(p) + FAST_16_OFFSETS
 
+def HighSpeed_test(around, l_max, l_min, minC):
+    # Phep kiem tra toc do cao
+    ps = around[0:16:4]
+    count = 0
+    for i in range(len(ps)): # N = 4
+        if (ps[i] > l_max or ps[i] < l_min):
+            count += 1
+    
+    if (count >= 3):
+        return True
+    
+    return False
+
 def isGoc(img, p, t, minC):
     # p = np.array([y, x])
     around = get_fast_16_pixels(p)
@@ -36,9 +49,17 @@ def isGoc(img, p, t, minC):
     l_max = center_val + t
     l_min = center_val - t
 
+    if not (HighSpeed_test(around, l_max, l_min, minC)):
+        # Kết quả của HighSpeed nếu không đáp ứng đủ atleast 3 điểm
+        # thì sẽ trả ra kết quả là Fasle
+        # not False = True -> Loại
+        return False
+    
     for i in range(len(around)):
         if (img[around[i][0], around[i][1]] > l_max or img[around[i][0], around[i][1]] < l_min):
             count += 1
+        elif (count < minC):
+            count = 0 # Điều kiện của góc là phải đáp ứng được tính liên tục
 
     if (count >= minC):
         return True
@@ -82,12 +103,9 @@ def draw_keypoints(image, keypoints, radius=4, color=(0, 0, 255), thickness=-1, 
     output_rgb = cv.cvtColor(img_bgr, cv.COLOR_BGR2RGB)
     return output_rgb
 
-def HighSpeed_test():
-    # Phep kiem tra toc do cao
-    pass
-
 def oFAST():
     #  Vì FAST không có hướng nên tại đây dùng để tính momemt bậc (p, q) trong patch bán kính r
+    
     pass
 
 if __name__ == "__main__":
@@ -96,5 +114,4 @@ if __name__ == "__main__":
     img_after = draw_keypoints(img, corner)
     cv.imshow("FAST", img_after)
     cv.waitKey(0)
-    cv.destroyAllWindow()
-    
+    cv.destroyAllWindows()    
