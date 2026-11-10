@@ -27,12 +27,12 @@ def get_fast_16_pixels(p):
     """
     return np.array(p) + FAST_16_OFFSETS
 
-def HighSpeed_test(around, l_max, l_min, minC):
+def HighSpeed_test(img, around, l_max, l_min, minC):
     # Phep kiem tra toc do cao
     ps = around[0:16:4]
     count = 0
     for i in range(len(ps)): # N = 4
-        if (ps[i] > l_max or ps[i] < l_min):
+        if (img[ps[i][0], ps[i][1]] > l_max or img[ps[i][0], ps[i][1]] < l_min):
             count += 1
     
     if (count >= 3):
@@ -49,7 +49,7 @@ def isGoc(img, p, t, minC):
     l_max = center_val + t
     l_min = center_val - t
 
-    if not (HighSpeed_test(around, l_max, l_min, minC)):
+    if not (HighSpeed_test(img, around, l_max, l_min, minC)):
         # Kết quả của HighSpeed nếu không đáp ứng đủ atleast 3 điểm
         # thì sẽ trả ra kết quả là Fasle
         # not False = True -> Loại
@@ -69,7 +69,7 @@ def isGoc(img, p, t, minC):
 def Sp(M_p, k):
     return np.linalg.det(M_p) - k * np.trace(M_p)**2
 
-def FAST(img : np.uint8, minC = 12, thresh = 10):
+def FAST(img : np.uint8, minC = 12, thresh = 37):
     # Use to detect feature
     H, W =  img.shape
     corner_list = []
