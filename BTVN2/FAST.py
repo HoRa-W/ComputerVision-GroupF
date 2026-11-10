@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+import harris as hr
 
 FAST_16_OFFSETS = np.array([
     [-3,  0],  # Point 1  (vị trí 12h)
@@ -66,10 +67,7 @@ def isGoc(img, p, t, minC):
     else:
         return False
 
-def Sp(M_p, k):
-    return np.linalg.det(M_p) - k * np.trace(M_p)**2
-
-def FAST(img : np.uint8, minC = 12, thresh = 37):
+def FAST(img : np.uint8, minC = 12, thresh = 40, NMS = True):
     # Use to detect feature
     H, W =  img.shape
     corner_list = []
@@ -80,28 +78,31 @@ def FAST(img : np.uint8, minC = 12, thresh = 37):
             if (isGoc(img, point, thresh, minC)):
                 corner_list.append(point)
 
+    if NMS:
+        # Giữ cực đại cục bộ trong cửa sổ 3x3
+        pass
+
     return np.array(corner_list) # Mảng dạng [[y, x]]
 
 def draw_keypoints(image, keypoints, radius=4, color=(0, 0, 255), thickness=-1, coords_format='yx'):
-    # 1. Chuyển ảnh xám sang BGR để vẽ màu (nếu là ảnh 2D)
-    if len(image.shape) == 2:
-        img_bgr = cv.cvtColor(image, cv.COLOR_GRAY2BGR)
-    else:
-        img_bgr = image.copy()
+    out = image.copy() if image.ndim == 3 else cv.cvtColor(image, cv.COLOR_GRAY2BGR)
+    for y, x in keypoints:
+        cv.circle(out, (int(x), int(y)), radius, color, thickness)
+    return out
 
-    # 2. Duyệt qua từng điểm và vẽ lên ảnh
-    for pt in keypoints:
-        if coords_format == 'yx':
-            y, x = int(pt[0]), int(pt[1])
-        else:
-            x, y = int(pt[0]), int(pt[1])
+# Harris Score
+def Sp(M_p, k):
+    # This is a scored function
+    return np.linalg.det(M_p) - k * np.trace(M_p)**2
 
-        # cv2.circle nhận tâm theo chuẩn (x, y) = (cột, hàng)
-        cv.circle(img_bgr, (x, y), radius, color, thickness)
+def NMS(img, p, t):
+    # p: Pixel center
+    # t: Threshold
+    # NMS is the shorted of Non Maximal Suppression 
+    # NMS is the solution of multiple interest points adjacent to one another
+    
 
-    # 3. Chuyển từ BGR sang RGB để hiển thị đúng màu với Matplotlib
-    output_rgb = cv.cvtColor(img_bgr, cv.COLOR_BGR2RGB)
-    return output_rgb
+    pass
 
 def oFAST():
     #  Vì FAST không có hướng nên tại đây dùng để tính momemt bậc (p, q) trong patch bán kính r
@@ -109,8 +110,9 @@ def oFAST():
     pass
 
 if __name__ == "__main__":
-    img = cv.imread("road.jpg", cv.IMREAD_GRAYSCALE)
-    corner = FAST(img)
+    img = cv.imread("Face.jpg")
+    img_gray = cv.imread("Face.jpg", cv.IMREAD_GRAYSCALE)
+    corner = FAST(img_gray, 10, 30)
     img_after = draw_keypoints(img, corner)
     cv.imshow("FAST", img_after)
     cv.waitKey(0)
