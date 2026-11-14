@@ -2,6 +2,25 @@ import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
 
+def read_img(img_path):
+    return cv.imread(img_path, cv.IMREAD_COLOR_BGR).astype('int')
+
+def show_img(img):
+    cv.imshow(img)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+
+def create_seeds(h, w):
+    return [
+        [h/2, w/2],
+        [h/3, w/3],[2*h/3, w/3],[h/3-10, w/3],
+        [h/3, 2*w/3],[2*h/3, 2*w/3],[h/3-10, 2*w/3],
+        [h/3, w-10],[2*h/3, w-10],[h/3-10, w-10]
+            ]
+
+def is_empty(stack):
+    return len(stack) == 0
+
 def lan_can_4(p):
     # p co the la dia chi cua 1 diem: y, x
     # return: North, West, East, South
@@ -28,7 +47,7 @@ def region_growing_classic(img, seeds, T, order="stack"):
             label[seed] = i
             mu = img[seed]
             n = 1
-            while stack:
+            while not is_empty(stack):
                 p = stack.pop()
                 for q in lan_can_4(p):
                     if is_label(q) and np.abs(I[q[0], q[1]] - mu) <= T:
