@@ -104,16 +104,28 @@ def mean_vung(img, p, vung_so : int):
         return int(sum/8)
 
 def delta_calculation(img, point, connectivity : int):
-    np.abs(img[point[0], point[1]] - mean_vung(point, connectivity))
+    np.abs(img[point[0], point[1]] - mean_vung(img, point, connectivity))
 
-def tie_insertion():
-    pass
 
-def tie_raster():
-    pass
+def srg_origin(img, seeds,  connectivity=4):
+    h, w = img.shape
+    Labels = -1 * np.ones((h, w))
+    for i, seed in enumerate(seeds):
+        Label = [seed]
+        SSL = [lan_can_4(seed) if connectivity == 4 else lan_can_8(seed)]
+        heapq.heapify(SSL)
+        while not is_empty(SSL):
+            y = heapq.heappop(SSL)
+            lan_can_y = lan_can_4(y) if connectivity==4 else lan_can_8(y)
+            
+            if is_label(Labels, lan_can_y.all):
+                heapq.heappush(Labels, y)
+                mean = mean_vung(img, y, connectivity)
 
-def tie_random():
-    pass
+            else:
+                
+
+
 
 def srg(img, seeds, connectivity=4, stale="lazy", tie="insertion"):
     """
@@ -127,16 +139,27 @@ def srg(img, seeds, connectivity=4, stale="lazy", tie="insertion"):
     n = len(seeds)
     h, w = img.shape
     Labels = -1 * np.ones([h, w], dtype= np.int32)
+    rng = np.random.default_rng()
+    my_heap = []
+    count = 0
+    frozen_delta = {}
+    version = {}
 
+    N_x = lan_can_4(seed) if connectivity == 4 else lan_can_8(seed)
+    my_heap = [N_x]
+    heapq.heapify(my_heap)
+    delta = delta_calculation(img, seed, connectivity)
+
+    
     for i, seed in enumerate(seeds):
-        # Goi N_x la tap hop diem lan can
-        N_x = lan_can_4(seed) if connectivity == 4 else lan_can_8(seed)
-        my_heap = [N_x]
-        heapq.heapify(my_heap)
-        result = delta_calculation(img, seed, connectivity)
-        
-        
-            
+        Labels[]
+
+    while my_heap:
+        delta, tie_key, p, label, v = heapq.heappop(my_heap)
+        if is_label(Labels, p):
+            continue
+        if stale == "lazy":
+            new_delta = delta_calculation(img, p, connectivity)
 
 
 def srg_step_frames(img, seeds, n_frames=8, **kwargs):
